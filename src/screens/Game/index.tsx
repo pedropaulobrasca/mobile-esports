@@ -11,7 +11,7 @@ import { THEME } from "../../theme";
 import logoImg from "../../assets/logo-nlw-esports.png";
 import { Heading } from "../../components/Heading";
 import { DuoCard, DuoCardProps } from "../../components/DuoCard";
-import { GameCardProps } from "../../components/GameCard";
+import { DuoMatch } from "../../components/DuoMatch";
 
 export interface GameProps {
   id: string;
@@ -21,6 +21,7 @@ export interface GameProps {
 
 export function Game() {
   const [duos, setDuos] = useState<DuoCardProps[]>([]);
+  const [discordDuoSelected, setDiscordDuoSelected] = useState("");
 
   const route = useRoute();
   const game = route.params as GameProps;
@@ -29,6 +30,14 @@ export function Game() {
 
   function handleBack() {
     navigation.goBack();
+  }
+
+  async function getDiscordUser(adsId: string) {
+    await fetch(`http://192.168.18.11:3333/ads/${adsId}/discord`)
+      .then((res) => res.json())
+      .then((data) => {
+        setDiscordDuoSelected(data.discord);
+      });
   }
 
   useEffect(() => {
@@ -65,7 +74,7 @@ export function Game() {
           data={duos}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <DuoCard data={item} onConnect={() => {}} />
+            <DuoCard data={item} onConnect={() => getDiscordUser(item.id)} />
           )}
           horizontal
           style={styles.containerList}
@@ -77,6 +86,12 @@ export function Game() {
               subtitle="Que tal criar um novo duo?"
             />
           )}
+        />
+
+        <DuoMatch
+          visible={discordDuoSelected.length > 0}
+          discord={discordDuoSelected}
+          closeModal={() => setDiscordDuoSelected("")}
         />
       </SafeAreaView>
     </Background>
